@@ -19,6 +19,9 @@ public func routes(_ router: Router) throws {
     // 2
     try router.register(collection: acronymsController)
     
+    let usersController = UsersController()
+    try router.register(collection: usersController)
+    
    
  
 }

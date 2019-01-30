@@ -34,7 +34,19 @@ public func configure(
     services.register(databases)
     
     var migrations = MigrationConfig()
-    // 4
-    migrations.add(model: Acronym.self, database: .psql)
+    // vi tri rat quan trong trong viec thiet lap khoa ngoai
+    migrations.add(model: User.self, database: .psql)//vi tri thu 1
+    migrations.add(model: Acronym.self, database: .psql) // vi tri thu 2
+    
     services.register(migrations)
+    
+    // 1
+    var commandConfig = CommandConfig.default()
+    // 2
+    commandConfig.useFluentCommands()
+    // 3
+    services.register(commandConfig)
+    
+    
+    
 }

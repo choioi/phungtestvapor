@@ -1,3 +1,4 @@
+import Foundation
 import Vapor
 import FluentPostgreSQL
 final class User: Codable {
@@ -9,7 +10,7 @@ final class User: Codable {
         self.username = username
     }
 }
-extension User: PostgreSQLUUIDModel {}
+extension User: PostgreSQLUUIDModel {} //Use the FluentPostgreSQL model helpers to make conforming to Model simple. Because the model’s id property is a UUID, you must use PostgreSQLUUIDModel instead of PostgreSQLModel.
 extension User: Migration {}
 extension User: Content {}
 extension User: Parameter {}

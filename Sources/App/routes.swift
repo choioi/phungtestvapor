@@ -13,8 +13,72 @@ public func routes(_ router: Router) throws {
         return "Hello, world!"
     }
 
+    //ADD Method 2
+    // 1
+    let acronymsController = AcronymsController()
+    // 2
+    try router.register(collection: acronymsController)
+    
+    func createHandler(_ req: Request) throws -> Future<Acronym> {
+        return try req
+            .content
+            .decode(Acronym.self)
+            .flatMap(to: Acronym.self) { acronym in
+                return acronym.save(on: req)
+        } }
+    func getHandler(_ req: Request) throws -> Future<Acronym> {
+        return try req.parameters.next(Acronym.self)
+    }
+    func updateHandler(_ req: Request) throws -> Future<Acronym> {
+        return try flatMap(
+            to: Acronym.self,
+            req.parameters.next(Acronym.self),
+            req.content.decode(Acronym.self)
+        ) { acronym, updatedAcronym in
+            acronym.short = updatedAcronym.short
+            acronym.long = updatedAcronym.long
+            return acronym.save(on: req)
+        }
+        
+    }
+    func deleteHandler(_ req: Request)
+        throws -> Future<HTTPStatus> {
+            return try req
+                .parameters
+                .next(Acronym.self)
+                .delete(on: req)
+                .transform(to: HTTPStatus.noContent)
+    }
+    func searchHandler(_ req: Request) throws -> Future<[Acronym]> {
+        guard let searchTerm = req
+            .query[String.self, at: "term"] else {
+                throw Abort(.badRequest)
+        }
+        return Acronym.query(on: req).group(.or) { or in
+            or.filter(\.short == searchTerm)
+            or.filter(\.long == searchTerm)
+            }.all()
+        
+    }
+    
+    func getFirstHandler(_ req: Request) throws -> Future<Acronym> {
+        return Acronym.query(on: req)
+            .first()
+            .map(to: Acronym.self) { acronym in
+                guard let acronym = acronym else {
+                    throw Abort(.notFound)
+                }
+                return acronym
+        }
+    }
+    func sortedHandler(_ req: Request) throws -> Future<[Acronym]> {
+        return Acronym.query(on: req).sort(\.short, .ascending).all()
+    }
+    
+    /*
     
     //ADD
+    /* ADD method 1
     router.post("api", "acronyms") { req -> Future<Acronym> in
         // 2
         return try req.content.decode(Acronym.self).flatMap(to: Acronym.self) { acronym in
@@ -23,6 +87,14 @@ public func routes(_ router: Router) throws {
         }
         
     }
+    */
+    
+   
+    
+    
+    
+    
+    
     
     //Retrieve all
     router.get("api", "acronyms") { (req) -> Future<[Acronym]> in
@@ -113,5 +185,5 @@ public func routes(_ router: Router) throws {
     
     //vapor cloud deploy --env=production --build=incremental -y
     
-    
+    */
 }

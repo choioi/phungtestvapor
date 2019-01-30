@@ -1,0 +1,4 @@
+module CCryptoOpenSSL {
+    umbrella "/Users/phung/Desktop/chapter5/TILApp/TILApp/.build/checkouts/crypto.git--321940576250857278/Sources/CCryptoOpenSSL/include"
+    export *
+}

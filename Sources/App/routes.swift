@@ -113,6 +113,7 @@ public func routes(_ router: Router) throws {
         
     }
     
+    //vapor cloud deploy --env=production --build=incremental -y
     
     
 }

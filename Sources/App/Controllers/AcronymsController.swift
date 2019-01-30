@@ -1,5 +1,7 @@
 import Vapor
 import Fluent
+import FluentSQL
+
 struct AcronymsController: RouteCollection {
     
     
@@ -24,7 +26,7 @@ struct AcronymsController: RouteCollection {
         // 7
         acronymsRoutes.get("sorted", use: sortedHandler)
         
-        //api/acronyms/<ACRONYM ID>/user
+        //
         acronymsRoutes.get(Acronym.parameter, "user",use: getUserHandler)
         
     }
@@ -80,8 +82,8 @@ struct AcronymsController: RouteCollection {
                 throw Abort(.badRequest)
         }
         return Acronym.query(on: req).group(.or) { or in
-            or.filter(\.short == searchTerm)
-            or.filter(\.long == searchTerm)
+            or.filter(\.short ~~ searchTerm)
+            or.filter(\.long ~~ searchTerm)
             }.all()
         
     }

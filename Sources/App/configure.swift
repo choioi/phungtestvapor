@@ -1,12 +1,17 @@
 // 1
 import FluentPostgreSQL
 import Vapor
+import Leaf
+
 public func configure(
     _ config: inout Config,
     _ env: inout Environment,
     _ services: inout Services
     ) throws { // 2
     try services.register(FluentPostgreSQLProvider())
+    try services.register(LeafProvider())
+    
+    
     let router = EngineRouter.default()
     try routes(router)
     services.register(router, as: Router.self)
@@ -19,12 +24,26 @@ public func configure(
     let hostname = Environment.get("DATABASE_HOSTNAME")
         ?? "localhost"
     let username = Environment.get("DATABASE_USER") ?? "vapor"
-    let databaseName = Environment.get("DATABASE_DB") ?? "vapor"
+    
+    let databaseName: String
+    let databasePort: Int
+    // 1If you’re running in the .testing environment, set the database name and port to different values.
+    if (env == .testing) {
+        databaseName = "vapor-test"
+        databasePort = 5433
+    } else {
+        databaseName = Environment.get("DATABASE_DB") ?? "vapor"
+        databasePort = 5432
+    }
+    
+    
     let password = Environment.get("DATABASE_PASSWORD")
         ?? "password"
     
     let databaseConfig = PostgreSQLDatabaseConfig(
         hostname: hostname,
+        // 2 Configure the database port in the PostgreSQLDatabaseConfig.
+        port: databasePort,
         username: username,
         database: databaseName,
         password: password)
@@ -49,7 +68,7 @@ public func configure(
     commandConfig.useFluentCommands()
     // 3
     services.register(commandConfig)
-    
+    config.prefer(LeafRenderer.self, for: ViewRenderer.self)
     
     
 }

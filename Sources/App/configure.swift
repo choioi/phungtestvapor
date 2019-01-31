@@ -37,6 +37,9 @@ public func configure(
     // vi tri rat quan trong trong viec thiet lap khoa ngoai
     migrations.add(model: User.self, database: .psql)//vi tri thu 1
     migrations.add(model: Acronym.self, database: .psql) // vi tri thu 2
+    migrations.add(model: Category.self, database: .psql)
+    migrations.add(model: AcronymCategoryPivot.self,database: .psql)
+    
     
     services.register(migrations)
     

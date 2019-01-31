@@ -29,6 +29,12 @@ struct AcronymsController: RouteCollection {
         //
         acronymsRoutes.get(Acronym.parameter, "user",use: getUserHandler)
         
+        acronymsRoutes.post(Acronym.parameter,"categories",Category.parameter,use: addCategoriesHandler)
+        
+        acronymsRoutes.get(Acronym.parameter,"categories",use: getCategoriesHandler)
+    
+        acronymsRoutes.delete(Acronym.parameter,"categories",Category.parameter,use: removeCategoriesHandler)
+    
     }
     func getAllHandler(_ req: Request) throws -> Future<[Acronym]> {
         return Acronym.query(on: req).all()
@@ -112,7 +118,57 @@ struct AcronymsController: RouteCollection {
                 acronym.user.get(on: req)
         }
     }
-
+    
+    //1:Define a new route handler, addCategoriesHandler(_:), that returns a
+    //Future<HTTPStatus>.
+    func addCategoriesHandler(_ req: Request) throws -> Future<HTTPStatus> {
+        // 2:Use flatMap(to:_:_:) to extract both the acronym and category from the request’s parameters
+        return try flatMap(
+            to: HTTPStatus.self,
+            req.parameters.next(Acronym.self),
+            req.parameters.next(Category.self)) { acronym, category in
+                // 3 Use attach(_:on:) to set up the relationship between acronym and category. This creates a pivot model and saves it in the database. Transform the result into a 201 Created response.
+                return acronym.categories.attach(category, on: req).transform(to: .created)
+        }
+    }
+    
+    func getCategoriesHandler(_ req: Request) throws -> Future<[Category]> {
+        // 2
+        return try req.parameters.next(Acronym.self)
+            .flatMap(to: [Category].self) { acronym in
+                // 3
+                try acronym.categories.query(on: req).all()
+        }
+    }
+    /*
+     Here’s what this does:
+     1. Defines route handler getCategoriesHandler(_:) returning Future<[Category]>.
+     2. Extract the acronym from the request’s parameters and unwrap the returned future.
+     3. Use the new computed property to get the categories. Then use a Fluent query to return all the categories.
+     */
     
     
+    //1
+    func removeCategoriesHandler(_ req: Request) throws -> Future<HTTPStatus> {
+        // 2
+        return try flatMap(
+            to: HTTPStatus.self,
+            req.parameters.next(Acronym.self),
+            req.parameters.next(Category.self)
+        ) { acronym, category in
+            //3
+            return acronym.categories
+                .detach(category, on: req)
+                .transform(to: .noContent)
+        }
+        
+    }
+    /*
+     Here’s what the new route handler does:
+     1. Define a new route handler, removeCategoriesHandler(_:), that returns a
+     Future<HTTPStatus>.
+     2. Use flatMap(to:_:_:) to extract both the acronym and category from the request’s
+     parameters.
+     3. Use detach(_:on:) to remove the relationship between acronym and category. This finds the pivot model in the database and deletes it. Transform the result into a 204 No Content response.
+     */
 }
